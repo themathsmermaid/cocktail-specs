@@ -97,10 +97,16 @@
       border-bottom: 1px dotted grey;
       border-top: 1px dotted grey;
     }
+p.individual {
+cursor: pointer;
+}
+    p.revealed {
+      color: grey
+    }
   </style>
 </head>
 <body>
-  <h1>Cocktail Specs Flash Cards</h1>
+  <h1>Flash Fred Cards</h1>
   <div id="subjects"></div>
   <div id="things-here"></div>
   <script>
@@ -155,7 +161,7 @@
                     ).appendTo("#things-here");
                   } else {
                     $(
-                      '<p style="">' + element.gs$cell.inputValue + "</p>"
+                      '<p class="individual" style="">' + element.gs$cell.inputValue + "</p>"
                     ).appendTo("#question-" + row + " .answers");
                   }
                 }
@@ -163,6 +169,10 @@
 
               $(".button").click(function () {
                 $(this).parent().toggleClass("answered");
+              });
+
+              $(".individual").click(function () {
+                $(this).toggleClass("revealed");
               });
             });
           });
