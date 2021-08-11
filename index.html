@@ -105,7 +105,7 @@
   <div id="things-here"></div>
   <script>
     // Find the JSON endpoint of a "public" google sheet (i.e. anyone with the link can view)
-    const numberOfSheets = 8;
+    const numberOfSheets = 2; // this could be collected from an index sheet
     const root =
       "https://spreadsheets.google.com/feeds/cells/1AeKnCWMyVB_qOaIzcb0PHfWMDBlP3EOApV_-ZI_7Lng/";
     const suffix = "/public/full?alt=json";
@@ -119,9 +119,8 @@
     // the minute the page loads, fetch that data
     var spreadsheetsData = {};
     endpoints.forEach((endpoint) => {
-      $.get(endpoint, function (data, status) {
+      $.get(endpoint, function (data, status, xhr) {
         spreadsheetsData[data.feed.title.$t] = data.feed.entry;
-        console.log(spreadsheetsData);
         var subjects = Object.keys(spreadsheetsData);
         if (subjects.length === numberOfSheets) {
           subjects.forEach((subject) => {
