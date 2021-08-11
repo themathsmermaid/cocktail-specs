@@ -1,0 +1,174 @@
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <style>
+    /* Find a free font at Google fonts. Here I've used their "Work Sans" font */
+    @import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@400&display=swap");
+    body {
+      margin: 0;
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 1000px;
+      padding-left: 30px;
+      padding-right: 30px;
+      font-family: "Work Sans", sans-serif;
+    }
+    h1 {
+      text-align: center;
+      margin-top: 40px;
+      margin-bottom: 30px;
+      color: #6c5b7b;
+    }
+    #things-here {
+      display: grid;
+      border: 1px solid #6c5b7b;
+    }
+    h2 {
+      display: inline-block;
+      text-align: center;
+      margin: 10px;
+      padding: 10px;
+      color: #355c7d;
+      border: 1px solid #c06c84;
+    }
+    p {
+      margin: 10px;
+      padding: 10px;
+      color: #355c7d;
+      border: 1px dotted #f67280;
+    }
+    .button {
+      text-align: center;
+      width: 80px;
+      background: rgb(100, 164, 100);
+      color: white;
+      margin: auto;
+      padding: 5px;
+      border-radius: 7px;
+      cursor: pointer;
+    }
+    .button:hover {
+      background-color: rgb(154, 211, 255);
+    }
+    .question {
+      text-align: center;
+      font-weight: bold;
+      background-color: rgb(204, 233, 255);
+    }
+    .answers {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .answers p {
+      color: white;
+      flex: auto;
+      text-align: center;
+    }
+
+    .answered .answers p {
+      color: rgb(45, 45, 45);
+    }
+
+    .answered .button {
+      background-color: grey;
+    }
+
+    #subjects div {
+      display: inline-block;
+      background-color: rgb(154, 211, 255);
+      padding: 10px;
+      margin: 10px;
+      cursor: pointer;
+      border-radius: 7px;
+    }
+    #subjects div:hover {
+      background-color: rgb(165, 201, 165);
+    }
+    #subjects div.selected {
+      background-color: rgb(100, 164, 100);
+      color: white;
+    }
+
+    .card {
+      margin-top: 20px;
+      margin-bottom: 20px;
+      padding-top: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px dotted grey;
+      border-top: 1px dotted grey;
+    }
+  </style>
+</head>
+<body>
+  <h1>Flash Fred Cards</h1>
+  <div id="subjects"></div>
+  <div id="things-here"></div>
+  <script>
+    // Find the JSON endpoint of a "public" google sheet (i.e. anyone with the link can view)
+    const numberOfSheets = 8;
+    const root =
+      "https://spreadsheets.google.com/feeds/cells/1AeKnCWMyVB_qOaIzcb0PHfWMDBlP3EOApV_-ZI_7Lng/";
+    const suffix = "/public/full?alt=json";
+    var endpoints = [];
+    var i = 1;
+    while (i <= numberOfSheets) {
+      endpoints.push(root + i + suffix);
+      i++;
+    }
+
+    // the minute the page loads, fetch that data
+    var spreadsheetsData = {};
+    endpoints.forEach((endpoint) => {
+      $.get(endpoint, function (data, status) {
+        spreadsheetsData[data.feed.title.$t] = data.feed.entry;
+        console.log(spreadsheetsData);
+        var subjects = Object.keys(spreadsheetsData);
+        if (subjects.length === numberOfSheets) {
+          subjects.forEach((subject) => {
+            $(
+              "<div class='subject' id=" + subject + ">" + subject + "</div>"
+            ).appendTo("#subjects");
+            $(".subject").click(function () {
+              $("#things-here").empty();
+              $(this).addClass("selected");
+              $(this).siblings().removeClass("selected");
+              var chosenSubject = $(this).attr("id");
+              spreadsheetsData[chosenSubject].forEach((element) => {
+                // each cell object contains the data, column, and row
+                // for more complex data manipulation, you should create a data transformer
+                var cellData = element.gs$cell.inputValue;
+                var column = element.gs$cell.col;
+                var row = element.gs$cell.row;
+
+                // if you want a styled first row
+                if (row !== "1") {
+                  if (column === "1") {
+                    $(
+                      '<div id="question-' +
+                        row +
+                        '" class="card"><p class="question" style="grid-column: ' +
+                        column +
+                        " / span 1; grid-row: " +
+                        row +
+                        ' / span 1">' +
+                        element.gs$cell.inputValue +
+                        "</p><div class='button'>show / hide answer</div><div class='answers'></div></div>"
+                    ).appendTo("#things-here");
+                  } else {
+                    $(
+                      '<p style="">' + element.gs$cell.inputValue + "</p>"
+                    ).appendTo("#question-" + row + " .answers");
+                  }
+                }
+              });
+
+              $(".button").click(function () {
+                $(this).parent().toggleClass("answered");
+              });
+            });
+          });
+        }
+      });
+    });
+  </script>
+</body>
